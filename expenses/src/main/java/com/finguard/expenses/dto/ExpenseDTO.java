@@ -12,7 +12,9 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class ExpenseRequest {
+@NoArgsConstructor
+@AllArgsConstructor
+public class ExpenseDTO {
 
     @NotBlank
     private String description;
