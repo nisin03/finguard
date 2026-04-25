@@ -1,11 +1,9 @@
 package com.finguard.expenses.mapper;
 
-import com.finguard.expenses.dto.ExpenseDTO;
-import com.finguard.expenses.entity.Expense;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -14,7 +12,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.finguard.expenses.dto.ExpenseRequest;
+import com.finguard.expenses.dto.ExpenseResponse;
+import com.finguard.expenses.entity.Expense;
 
 @ExtendWith(MockitoExtension.class)
 class ExpenseMapperTest {
@@ -41,7 +46,7 @@ class ExpenseMapperTest {
                 .build();
 
         // When
-        ExpenseDTO result = mapper.toDto(expense);
+        ExpenseResponse result = mapper.toDto(expense);
 
         // Then
         assertNotNull(result);
@@ -55,7 +60,7 @@ class ExpenseMapperTest {
     @Test
     void toDto_shouldReturnNullWhenExpenseIsNull() {
         // When
-        ExpenseDTO result = mapper.toDto(null);
+        ExpenseResponse result = mapper.toDto(null);
 
         // Then
         assertNull(result);
@@ -70,7 +75,7 @@ class ExpenseMapperTest {
         String category = "Food";
         String description = "Lunch at restaurant";
 
-        ExpenseDTO expenseDTO = ExpenseDTO.builder()
+        ExpenseRequest expenseDTO = ExpenseRequest.builder()
                 .description(description)
                 .amount(amount)
                 .date(date)
@@ -124,7 +129,7 @@ class ExpenseMapperTest {
         List<Expense> expenses = Arrays.asList(expense1, expense2);
 
         // When
-        List<ExpenseDTO> result = mapper.toDtoList(expenses);
+        List<ExpenseResponse> result = mapper.toDtoList(expenses);
 
         // Then
         assertNotNull(result);
@@ -136,7 +141,7 @@ class ExpenseMapperTest {
     @Test
     void toDtoList_shouldReturnNullWhenExpensesListIsNull() {
         // When
-        List<ExpenseDTO> result = mapper.toDtoList(null);
+        List<ExpenseResponse> result = mapper.toDtoList(null);
 
         // Then
         assertNull(result);
@@ -145,7 +150,7 @@ class ExpenseMapperTest {
     @Test
     void toDtoList_shouldReturnEmptyListWhenExpensesListIsEmpty() {
         // When
-        List<ExpenseDTO> result = mapper.toDtoList(Collections.emptyList());
+        List<ExpenseResponse> result = mapper.toDtoList(Collections.emptyList());
 
         // Then
         assertNotNull(result);
@@ -155,7 +160,7 @@ class ExpenseMapperTest {
     @Test
     void toEntityList_shouldMapListOfExpenseDTOsToListOfExpenses() {
         // Given
-        ExpenseDTO expenseDTO1 = ExpenseDTO.builder()
+        ExpenseRequest expenseDTO1 = ExpenseRequest.builder()
                 .description("Expense 1")
                 .amount(BigDecimal.ONE)
                 .date(LocalDate.now())
@@ -163,7 +168,7 @@ class ExpenseMapperTest {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        ExpenseDTO expenseDTO2 = ExpenseDTO.builder()
+        ExpenseRequest expenseDTO2 = ExpenseRequest.builder()
                 .description("Expense 2")
                 .amount(BigDecimal.TEN)
                 .date(LocalDate.now().minusDays(1))
@@ -171,7 +176,7 @@ class ExpenseMapperTest {
                 .createdAt(LocalDateTime.now().minusHours(1))
                 .build();
 
-        List<ExpenseDTO> expenseDTOs = Arrays.asList(expenseDTO1, expenseDTO2);
+        List<ExpenseRequest> expenseDTOs = Arrays.asList(expenseDTO1, expenseDTO2);
 
         // When
         List<Expense> result = mapper.toEntityList(expenseDTOs);

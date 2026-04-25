@@ -1,26 +1,41 @@
 package com.finguard.expenses.service;
 
-import com.finguard.expenses.dto.ExpenseDTO;
-import com.finguard.expenses.entity.Expense;
-import com.finguard.expenses.mapper.ExpenseMapper;
-import com.finguard.expenses.repository.ExpenseRepository;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.finguard.expenses.dto.ExpenseRequest;
+import com.finguard.expenses.dto.ExpenseResponse;
+import com.finguard.expenses.entity.Expense;
+import com.finguard.expenses.exception.ResourceNotFoundException;
+import com.finguard.expenses.mapper.ExpenseMapper;
+import com.finguard.expenses.repository.ExpenseRepository;
 
 @ExtendWith(MockitoExtension.class)
 class ExpenseServiceTest {
+
+    public static final LocalDateTime CREATED_AT = LocalDateTime.of(2026, 1, 15, 10, 30);
+    public static final LocalDate DATE = LocalDate.of(2026, 1, 15);
+    public static final long EXPENSE_ID = 1L;
+    public static final BigDecimal AMOUNT = new BigDecimal("100.50");
+    public static final String DESCRIPTION = "Lunch at restaurant";
+    public static final String CATEGORY = "Food";
 
     @Mock
     private ExpenseRepository repository;
@@ -34,112 +49,141 @@ class ExpenseServiceTest {
     @Test
     void createExpense_shouldMapDtoToEntityAndSave() {
         // Given
-        LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 30);
-        LocalDate date = LocalDate.of(2024, 1, 15);
-        BigDecimal amount = new BigDecimal("100.50");
-        String category = "Food";
-        String description = "Lunch at restaurant";
+        ExpenseRequest request = createDefaultExpenseRequest();
+        Expense mappedExpense = createDefaultExpense();
 
-        ExpenseDTO request = ExpenseDTO.builder()
-                .createdAt(createdAt)
-                .date(date)
-                .amount(amount)
-                .category(category)
-                .description(description)
-                .build();
-
-        Expense expense = Expense.builder()
-                .description(description)
-                .amount(amount)
-                .date(date)
-                .category(category)
-                .createdAt(createdAt)
-                .build();
-
-        Expense savedExpense = Expense.builder()
-                .id(1L)
-                .description(description)
-                .amount(amount)
-                .date(date)
-                .category(category)
-                .createdAt(createdAt)
-                .build();
-
-        ExpenseDTO responseDto = ExpenseDTO.builder()
-                .description(description)
-                .amount(amount)
-                .date(date)
-                .category(category)
-                .createdAt(createdAt)
-                .build();
-
-        when(mapper.toEntity(request)).thenReturn(expense);
-        when(repository.save(any(Expense.class))).thenReturn(savedExpense);
-        when(mapper.toDto(savedExpense)).thenReturn(responseDto);
-
-        // When
-        ExpenseDTO result = service.createExpense(request);
-
-        // Then
-        verify(mapper).toEntity(request);
-        verify(repository).save(expense);
-        verify(mapper).toDto(savedExpense);
-
-        assertNotNull(result);
-        assertEquals(description, result.getDescription());
-        assertEquals(amount, result.getAmount());
-        assertEquals(date, result.getDate());
-        assertEquals(category, result.getCategory());
-        assertEquals(createdAt, result.getCreatedAt());
-    }
-
-    @Test
-    void createExpense_shouldReturnMappedExpenseDTO() {
-        // Given
-        ExpenseDTO request = ExpenseDTO.builder()
-                .description("Test expense")
-                .amount(BigDecimal.TEN)
-                .date(LocalDate.now())
-                .category("Test")
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        Expense mappedExpense = Expense.builder()
-                .description("Test expense")
-                .amount(BigDecimal.TEN)
-                .date(LocalDate.now())
-                .category("Test")
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        Expense savedExpense = Expense.builder()
-                .id(2L)
-                .description("Test expense")
-                .amount(BigDecimal.TEN)
-                .date(LocalDate.now())
-                .category("Test")
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        ExpenseDTO expectedResponse = ExpenseDTO.builder()
-                .description("Test expense")
-                .amount(BigDecimal.TEN)
-                .date(LocalDate.now())
-                .category("Test")
-                .createdAt(LocalDateTime.now())
-                .build();
+        Expense savedExpense = createDefaultExpense();
+        ExpenseResponse expectedResponse = createDefaultExpenseResponse();
 
         when(mapper.toEntity(request)).thenReturn(mappedExpense);
         when(repository.save(any(Expense.class))).thenReturn(savedExpense);
         when(mapper.toDto(savedExpense)).thenReturn(expectedResponse);
 
         // When
-        ExpenseDTO result = service.createExpense(request);
+        ExpenseResponse result = service.createExpense(request);
+
+        // Then
+        verify(mapper).toEntity(request);
+        verify(repository).save(mappedExpense);
+        verify(mapper).toDto(savedExpense);
+
+        assertNotNull(result);
+        assertEquals(DESCRIPTION, result.getDescription());
+        assertEquals(AMOUNT, result.getAmount());
+        assertEquals(DATE, result.getDate());
+        assertEquals(CATEGORY, result.getCategory());
+        assertEquals(CREATED_AT, result.getCreatedAt());
+    }
+
+    @Test
+    void createExpense_shouldReturnMappedExpenseDTO() {
+        // Given
+        ExpenseRequest request = createDefaultExpenseRequest();
+        Expense mappedExpense = createDefaultExpense();
+
+        Expense savedExpense = createDefaultExpense();
+        ExpenseResponse expectedResponse = createDefaultExpenseResponse();
+
+        when(mapper.toEntity(request)).thenReturn(mappedExpense);
+        when(repository.save(any(Expense.class))).thenReturn(savedExpense);
+        when(mapper.toDto(savedExpense)).thenReturn(expectedResponse);
+
+        // When
+        ExpenseResponse result = service.createExpense(request);
 
         // Then
         assertNotNull(result);
-        assertEquals("Test expense", result.getDescription());
-        assertEquals(BigDecimal.TEN, result.getAmount());
-        assertEquals("Test", result.getCategory());
+        assertEquals(DESCRIPTION, result.getDescription());
+        assertEquals(AMOUNT, result.getAmount());
+        assertEquals(CATEGORY, result.getCategory());
+    }
+
+    @Test
+    void getExpenseById_shouldReturnExpenseDTOWhenFound() {
+        // Given
+        Expense expense = createDefaultExpense();
+        ExpenseResponse expectedDto = createDefaultExpenseResponse();
+
+        when(repository.findById(EXPENSE_ID)).thenReturn(Optional.of(expense));
+        when(mapper.toDto(expense)).thenReturn(expectedDto);
+
+        // When
+        ExpenseResponse result = service.getExpenseById(EXPENSE_ID);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(DESCRIPTION, result.getDescription());
+        assertEquals(AMOUNT, result.getAmount());
+        assertEquals(CATEGORY, result.getCategory());
+        verify(repository).findById(EXPENSE_ID);
+        verify(mapper).toDto(expense);
+    }
+
+    @Test
+    void getExpenseById_shouldThrowResourceNotFoundExceptionWhenNotFound() {
+        // Given
+        Long expenseId = 999L;
+
+        when(repository.findById(expenseId)).thenReturn(Optional.empty());
+
+        // When & Then
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> service.getExpenseById(expenseId));
+
+        assertEquals("Expense not found with id: '999'", exception.getMessage());
+        verify(repository).findById(expenseId);
+    }
+
+    @Test
+    void getAllExpenses_shouldReturnExpenseList() {
+        // Given
+        List<Expense> expenseList = Collections.singletonList(createDefaultExpense());
+
+        when(repository.findAll()).thenReturn(expenseList);
+        when(mapper.toDto(any())).thenReturn(createDefaultExpenseResponse());
+
+        // When
+        List<ExpenseResponse> resultList = service.getAllExpenses();
+
+        // Then
+        assertNotNull(resultList);
+        assertEquals(DESCRIPTION, resultList.get(0).getDescription());
+        assertEquals(AMOUNT, resultList.get(0).getAmount());
+        assertEquals(CATEGORY, resultList.get(0).getCategory());
+        verify(repository).findAll();
+        verify(mapper).toDto(any());
+    }
+
+    private Expense createDefaultExpense() {
+        return Expense.builder()
+                .id(EXPENSE_ID)
+                .description(DESCRIPTION)
+                .amount(AMOUNT)
+                .date(DATE)
+                .category(CATEGORY)
+                .createdAt(CREATED_AT)
+                .build();
+    }
+
+    private ExpenseRequest createDefaultExpenseRequest() {
+        return ExpenseRequest.builder()
+                .description(DESCRIPTION)
+                .amount(AMOUNT)
+                .date(DATE)
+                .category(CATEGORY)
+                .createdAt(CREATED_AT)
+                .build();
+    }
+
+    private ExpenseResponse createDefaultExpenseResponse() {
+        return ExpenseResponse.builder()
+                .id(EXPENSE_ID)
+                .description(DESCRIPTION)
+                .amount(AMOUNT)
+                .date(DATE)
+                .category(CATEGORY)
+                .createdAt(CREATED_AT)
+                .build();
     }
 }

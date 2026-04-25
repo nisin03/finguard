@@ -1,10 +1,16 @@
 package com.finguard.expenses.service;
 
-import com.finguard.expenses.dto.ExpenseDTO;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.finguard.expenses.dto.ExpenseRequest;
+import com.finguard.expenses.dto.ExpenseResponse;
 import com.finguard.expenses.entity.Expense;
+import com.finguard.expenses.exception.ResourceNotFoundException;
 import com.finguard.expenses.mapper.ExpenseMapper;
 import com.finguard.expenses.repository.ExpenseRepository;
-import org.springframework.stereotype.Service;
 
 @Service
 public class ExpenseService {
@@ -17,10 +23,21 @@ public class ExpenseService {
         this.mapper = mapper;
     }
 
-    public ExpenseDTO createExpense(ExpenseDTO request) {
+    public ExpenseResponse createExpense(ExpenseRequest request) {
         Expense expense = mapper.toEntity(request);
 
         Expense saved = expenseRepository.save(expense);
         return mapper.toDto(saved);
+    }
+
+    public ExpenseResponse getExpenseById(Long id) {
+        Expense expense = expenseRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Expense", "id", id));
+        return mapper.toDto(expense);
+    }
+
+    public List<ExpenseResponse> getAllExpenses() {
+        List<Expense> expenseList = expenseRepository.findAll();
+        return expenseList.stream().map(mapper::toDto).collect(Collectors.toList());
     }
 }

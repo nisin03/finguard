@@ -1,21 +1,24 @@
 package com.finguard.expenses.mapper;
 
-import com.finguard.expenses.dto.ExpenseDTO;
-import com.finguard.expenses.entity.Expense;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Component;
+
+import com.finguard.expenses.dto.ExpenseRequest;
+import com.finguard.expenses.dto.ExpenseResponse;
+import com.finguard.expenses.entity.Expense;
 
 @Component
 public class ExpenseMapper {
 
-    public ExpenseDTO toDto(Expense expense) {
+    public ExpenseResponse toDto(Expense expense) {
         if (expense == null) {
             return null;
         }
 
-        return ExpenseDTO.builder()
+        return ExpenseResponse.builder()
+                .id(expense.getId())
                 .description(expense.getDescription())
                 .amount(expense.getAmount())
                 .date(expense.getDate())
@@ -24,7 +27,7 @@ public class ExpenseMapper {
                 .build();
     }
 
-    public Expense toEntity(ExpenseDTO expenseDTO) {
+    public Expense toEntity(ExpenseRequest expenseDTO) {
         if (expenseDTO == null) {
             return null;
         }
@@ -38,7 +41,7 @@ public class ExpenseMapper {
                 .build();
     }
 
-    public List<ExpenseDTO> toDtoList(List<Expense> expenses) {
+    public List<ExpenseResponse> toDtoList(List<Expense> expenses) {
         if (expenses == null) {
             return null;
         }
@@ -48,7 +51,7 @@ public class ExpenseMapper {
                 .collect(Collectors.toList());
     }
 
-    public List<Expense> toEntityList(List<ExpenseDTO> expenseDTOs) {
+    public List<Expense> toEntityList(List<ExpenseRequest> expenseDTOs) {
         if (expenseDTOs == null) {
             return null;
         }
