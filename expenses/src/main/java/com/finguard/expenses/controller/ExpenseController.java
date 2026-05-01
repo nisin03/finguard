@@ -2,19 +2,21 @@ package com.finguard.expenses.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.finguard.expenses.dto.ExpenseRequest;
 import com.finguard.expenses.dto.ExpenseResponse;
 import com.finguard.expenses.service.ExpenseService;
-import org.springframework.web.bind.annotation.PutMapping;
 
+import jakarta.validation.Valid;
 
 @RestController
 public class ExpenseController {
@@ -26,9 +28,9 @@ public class ExpenseController {
     }
 
     @PostMapping("/api/expenses/create")
-    public ResponseEntity<ExpenseResponse> createExpense(@RequestBody ExpenseRequest request) {
+    public ResponseEntity<ExpenseResponse> createExpense(@Valid @RequestBody ExpenseRequest request) {
         ExpenseResponse response = service.createExpense(request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/api/expenses")
@@ -44,7 +46,8 @@ public class ExpenseController {
     }
 
     @PutMapping("/api/expenses/{id}")
-    public ResponseEntity<ExpenseResponse> updateExpense(@PathVariable Long id, @RequestBody ExpenseRequest request) {
+    public ResponseEntity<ExpenseResponse> updateExpense(@PathVariable Long id,
+            @Valid @RequestBody ExpenseRequest request) {
         ExpenseResponse response = service.updateExpense(id, request);
         return ResponseEntity.ok(response);
     }
