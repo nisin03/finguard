@@ -40,4 +40,22 @@ public class ExpenseService {
         List<Expense> expenseList = expenseRepository.findAll();
         return expenseList.stream().map(mapper::toDto).collect(Collectors.toList());
     }
+
+    public ExpenseResponse updateExpense(Long id, ExpenseRequest request) {
+        Expense expense = expenseRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Expense", "id", id));
+
+        mapper.updateEntity(request, expense);
+
+        Expense updated = expenseRepository.save(expense);
+        return mapper.toDto(updated);
+    }
+
+    public void deleteExpense(Long id) {
+        if (!expenseRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Expense", "id", id);
+        }
+
+        expenseRepository.deleteById(id);
+    }
 }

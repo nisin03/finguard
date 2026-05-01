@@ -3,6 +3,7 @@ package com.finguard.expenses.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.finguard.expenses.dto.ExpenseRequest;
 import com.finguard.expenses.dto.ExpenseResponse;
 import com.finguard.expenses.service.ExpenseService;
+import org.springframework.web.bind.annotation.PutMapping;
+
 
 @RestController
 public class ExpenseController {
@@ -38,6 +41,18 @@ public class ExpenseController {
     public ResponseEntity<ExpenseResponse> getExpenseById(@PathVariable Long id) {
         ExpenseResponse response = service.getExpenseById(id);
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/api/expenses/{id}")
+    public ResponseEntity<ExpenseResponse> updateExpense(@PathVariable Long id, @RequestBody ExpenseRequest request) {
+        ExpenseResponse response = service.updateExpense(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/api/expenses/{id}")
+    public ResponseEntity<Void> deleteExpense(@PathVariable Long id) {
+        service.deleteExpense(id);
+        return ResponseEntity.noContent().build();
     }
 
 }

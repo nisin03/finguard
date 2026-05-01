@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -16,6 +18,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -153,6 +156,93 @@ class ExpenseServiceTest {
         assertEquals(CATEGORY, resultList.get(0).getCategory());
         verify(repository).findAll();
         verify(mapper).toDto(any());
+    }
+
+    @Test
+    void updateExpense_shouldUpdateExistingExpenseAndReturnDto() {
+        // Given
+        ExpenseRequest request = ExpenseRequest.builder()
+                .description("Dinner at cafe")
+                .amount(new BigDecimal("120.00"))
+                .date(DATE.plusDays(1))
+                .category("Dining")
+                .createdAt(CREATED_AT)
+                .build();
+
+        Expense existingExpense = createDefaultExpense();
+        ExpenseResponse expectedResponse = ExpenseResponse.builder()
+                .id(EXPENSE_ID)
+                .description(request.getDescription())
+                .amount(request.getAmount())
+                .date(request.getDate())
+                .category(request.getCategory())
+                .createdAt(request.getCreatedAt())
+                .build();
+
+        when(repository.findById(EXPENSE_ID)).thenReturn(Optional.of(existingExpense));
+        when(repository.save(any(Expense.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        doCallRealMethod().when(mapper).updateEntity(any(ExpenseRequest.class), any(Expense.class));
+        doCallRealMethod().when(mapper).toDto(any(Expense.class));
+
+        // When
+        ExpenseResponse result = service.updateExpense(EXPENSE_ID, request);
+
+        // Then
+        ArgumentCaptor<Expense> expenseCaptor = ArgumentCaptor.forClass(Expense.class);
+        verify(repository).findById(EXPENSE_ID);
+        verify(repository).save(expenseCaptor.capture());
+        verify(mapper).toDto(expenseCaptor.getValue());
+
+        Expense savedExpense = expenseCaptor.getValue();
+        assertEquals(EXPENSE_ID, savedExpense.getId());
+        assertEquals(request.getDescription(), savedExpense.getDescription());
+        assertEquals(request.getAmount(), savedExpense.getAmount());
+        assertEquals(request.getDate(), savedExpense.getDate());
+        assertEquals(request.getCategory(), savedExpense.getCategory());
+        assertEquals(request.getCreatedAt(), savedExpense.getCreatedAt());
+
+        assertNotNull(result);
+        assertEquals(expectedResponse, result);
+    }
+
+    @Test
+    void updateExpense_shouldThrowResourceNotFoundExceptionWhenExpenseDoesNotExist() {
+        // Given
+        ExpenseRequest request = createDefaultExpenseRequest();
+
+        when(repository.findById(EXPENSE_ID)).thenReturn(Optional.empty());
+
+        // When & Then
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> service.updateExpense(EXPENSE_ID, request));
+
+        assertEquals("Expense not found with id: '1'", exception.getMessage());
+        verify(repository).findById(EXPENSE_ID);
+        verify(repository, never()).save(any(Expense.class));
+    }
+
+    @Test
+    void deleteExpense_shouldDeleteExistingExpense() {
+        when(repository.existsById(EXPENSE_ID)).thenReturn(true);
+
+        service.deleteExpense(EXPENSE_ID);
+
+        verify(repository).existsById(EXPENSE_ID);
+        verify(repository).deleteById(EXPENSE_ID);
+    }
+
+    @Test
+    void deleteExpense_shouldThrowResoueceNotFoundExceptionWHenExpenseDoesNotExist() {
+        when(repository.existsById(EXPENSE_ID)).thenReturn(false);
+
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> service.deleteExpense(EXPENSE_ID));
+
+        assertEquals("Expense not found with id: '1'", exception.getMessage());
+        verify(repository).existsById(EXPENSE_ID);
+        verify(repository, never()).deleteById(EXPENSE_ID);
     }
 
     private Expense createDefaultExpense() {

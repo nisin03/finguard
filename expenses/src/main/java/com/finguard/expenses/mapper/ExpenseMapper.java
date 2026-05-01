@@ -41,6 +41,18 @@ public class ExpenseMapper {
                 .build();
     }
 
+    public void updateEntity(ExpenseRequest expenseDTO, Expense expense) {
+        if (expenseDTO == null || expense == null) {
+            return;
+        }
+
+        expense.setDescription(expenseDTO.getDescription());
+        expense.setAmount(expenseDTO.getAmount());
+        expense.setDate(expenseDTO.getDate());
+        expense.setCategory(expenseDTO.getCategory());
+        expense.setCreatedAt(expenseDTO.getCreatedAt());
+    }
+
     public List<ExpenseResponse> toDtoList(List<Expense> expenses) {
         if (expenses == null) {
             return null;
