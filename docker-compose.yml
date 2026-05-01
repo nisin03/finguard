@@ -4,8 +4,8 @@ services:
     container_name: finguard-postgres
     environment:
       POSTGRES_DB: finguard
-      POSTGRES_USER: finguard_user
-      POSTGRES_PASSWORD: finguard_pass
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
     ports:
       - "5432:5432"
     volumes:

@@ -1,0 +1,10 @@
+CREATE TABLE expenses (
+    id BIGSERIAL PRIMARY KEY,
+    description VARCHAR(255) NOT NULL,
+    amount NUMERIC(19, 2) NOT NULL,
+    date DATE NOT NULL,
+    category VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    deleted_at TIMESTAMPTZ
+);
