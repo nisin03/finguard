@@ -12,6 +12,9 @@ import com.finguard.expenses.exception.ResourceNotFoundException;
 import com.finguard.expenses.mapper.ExpenseMapper;
 import com.finguard.expenses.repository.ExpenseRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class ExpenseService {
 
@@ -27,12 +30,17 @@ public class ExpenseService {
         Expense expense = mapper.toEntity(request);
 
         Expense saved = expenseRepository.save(expense);
+        log.debug("Expense created: id={} amount={}", saved.getId(), saved.getAmount());
         return mapper.toDto(saved);
     }
 
     public ExpenseResponse getExpenseById(Long id) {
         Expense expense = expenseRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Expense", "id", id));
+                .orElseThrow(() -> {
+                    log.warn("Expense not found: id={}", id);
+                    return new ResourceNotFoundException("Expense", "id", id);
+                });
+        log.debug("Expense retrieved: id={}", expense.getId());
         return mapper.toDto(expense);
     }
 
@@ -56,6 +64,7 @@ public class ExpenseService {
             throw new ResourceNotFoundException("Expense", "id", id);
         }
 
+        log.warn("Expense soft-deleted: id={}", id);
         expenseRepository.deleteById(id);
     }
 }
