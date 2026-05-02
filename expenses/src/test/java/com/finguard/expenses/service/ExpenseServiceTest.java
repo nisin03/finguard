@@ -53,7 +53,12 @@ class ExpenseServiceTest {
     void createExpense_shouldMapDtoToEntityAndSave() {
         // Given
         ExpenseRequest request = createDefaultExpenseRequest();
-        Expense mappedExpense = createDefaultExpense();
+        Expense mappedExpense = Expense.builder()
+                .description(DESCRIPTION)
+                .amount(AMOUNT)
+                .date(DATE)
+                .category(CATEGORY)
+                .build();
 
         Expense savedExpense = createDefaultExpense();
         ExpenseResponse expectedResponse = createDefaultExpenseResponse();
@@ -82,7 +87,12 @@ class ExpenseServiceTest {
     void createExpense_shouldReturnMappedExpenseDTO() {
         // Given
         ExpenseRequest request = createDefaultExpenseRequest();
-        Expense mappedExpense = createDefaultExpense();
+        Expense mappedExpense = Expense.builder()
+                .description(DESCRIPTION)
+                .amount(AMOUNT)
+                .date(DATE)
+                .category(CATEGORY)
+                .build();
 
         Expense savedExpense = createDefaultExpense();
         ExpenseResponse expectedResponse = createDefaultExpenseResponse();
@@ -166,7 +176,6 @@ class ExpenseServiceTest {
                 .amount(new BigDecimal("120.00"))
                 .date(DATE.plusDays(1))
                 .category("Dining")
-                .createdAt(CREATED_AT)
                 .build();
 
         Expense existingExpense = createDefaultExpense();
@@ -176,7 +185,7 @@ class ExpenseServiceTest {
                 .amount(request.getAmount())
                 .date(request.getDate())
                 .category(request.getCategory())
-                .createdAt(request.getCreatedAt())
+                .createdAt(CREATED_AT)
                 .build();
 
         when(repository.findById(EXPENSE_ID)).thenReturn(Optional.of(existingExpense));
@@ -199,7 +208,7 @@ class ExpenseServiceTest {
         assertEquals(request.getAmount(), savedExpense.getAmount());
         assertEquals(request.getDate(), savedExpense.getDate());
         assertEquals(request.getCategory(), savedExpense.getCategory());
-        assertEquals(request.getCreatedAt(), savedExpense.getCreatedAt());
+        assertEquals(CREATED_AT, savedExpense.getCreatedAt());
 
         assertNotNull(result);
         assertEquals(expectedResponse, result);
@@ -262,7 +271,6 @@ class ExpenseServiceTest {
                 .amount(AMOUNT)
                 .date(DATE)
                 .category(CATEGORY)
-                .createdAt(CREATED_AT)
                 .build();
     }
 

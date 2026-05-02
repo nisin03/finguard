@@ -28,11 +28,12 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.finguard.expenses.dto.ExpenseRequest;
 import com.finguard.expenses.dto.ExpenseResponse;
 import com.finguard.expenses.repository.ExpenseRepository;
+import com.finguard.expenses.support.PostgresIntegrationTest;
 
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
-class ExpenseControllerIntegrationTest {
+class ExpenseControllerIntegrationTest extends PostgresIntegrationTest {
 
     public static final LocalDateTime CREATED_AT = LocalDateTime.of(2026, 1, 15, 10, 30);
     public static final LocalDate DATE = LocalDate.of(2026, 1, 15);
@@ -61,13 +62,11 @@ class ExpenseControllerIntegrationTest {
 
     @Test
     void getAllExpenses_shouldReturnListOfExpenses() throws Exception {
-        // Given
         ExpenseRequest request1 = ExpenseRequest.builder()
                 .description("Lunch")
                 .amount(new BigDecimal("25.50"))
                 .date(LocalDate.of(2026, 1, 15))
                 .category("Food")
-                .createdAt(LocalDateTime.now())
                 .build();
 
         ExpenseRequest request2 = ExpenseRequest.builder()
@@ -75,21 +74,18 @@ class ExpenseControllerIntegrationTest {
                 .amount(new BigDecimal("50.00"))
                 .date(LocalDate.of(2026, 1, 16))
                 .category("Travel")
-                .createdAt(LocalDateTime.now())
                 .build();
 
-        // Create two expenses
         mockMvc.perform(post("/api/expenses/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request1)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/expenses/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request2)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
-        // When & Then
         mockMvc.perform(get("/api/expenses"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
@@ -101,7 +97,6 @@ class ExpenseControllerIntegrationTest {
 
     @Test
     void getAllExpenses_shouldReturnEmptyListWhenNoExpenses() throws Exception {
-        // When & Then
         mockMvc.perform(get("/api/expenses"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
@@ -109,13 +104,12 @@ class ExpenseControllerIntegrationTest {
 
     @Test
     void getExpenseById_shouldReturnExpenseWhenExists() throws Exception {
-        // Given
         ExpenseRequest request = createDefaultExpenseRequest();
 
         String response = mockMvc.perform(post("/api/expenses/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
@@ -123,7 +117,6 @@ class ExpenseControllerIntegrationTest {
         ExpenseResponse createdExpense = objectMapper.readValue(response, ExpenseResponse.class);
         Long expenseId = createdExpense.getId();
 
-        // When & Then
         mockMvc.perform(get("/api/expenses/{id}", expenseId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.description").value(DESCRIPTION))
@@ -133,11 +126,7 @@ class ExpenseControllerIntegrationTest {
 
     @Test
     void getExpenseById_shouldReturn404WhenExpenseNotFound() throws Exception {
-        // Given
-        Long nonExistentId = 999L;
-
-        // When & Then
-        mockMvc.perform(get("/api/expenses/{id}", nonExistentId))
+        mockMvc.perform(get("/api/expenses/{id}", 999L))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").exists())
                 .andExpect(jsonPath("$.status").value(404));
@@ -145,32 +134,26 @@ class ExpenseControllerIntegrationTest {
 
     @Test
     void createExpense_shouldSaveExpenseWithValidData() throws Exception {
-        // Given
         ExpenseRequest request = createDefaultExpenseRequest();
 
-        String requestJson = objectMapper.writeValueAsString(request);
-
-        // When & Then
         mockMvc.perform(post("/api/expenses/create")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson))
-                .andExpect(status().isOk())
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.description").value(DESCRIPTION))
-                .andExpect(jsonPath("$.category").value(CATEGORY));
+                .andExpect(jsonPath("$.category").value(CATEGORY))
+                .andExpect(jsonPath("$.createdAt").isNotEmpty());
 
-        // Verify saved to database
         assertThat(expenseRepository.count()).isEqualTo(1);
     }
 
     @Test
     void createExpense_shouldHandleMultipleExpenses() throws Exception {
-        // Given
         ExpenseRequest request1 = ExpenseRequest.builder()
                 .description("Lunch")
                 .amount(new BigDecimal("15.00"))
                 .date(LocalDate.of(2024, 1, 15))
                 .category("Food")
-                .createdAt(LocalDateTime.now())
                 .build();
 
         ExpenseRequest request2 = ExpenseRequest.builder()
@@ -178,41 +161,35 @@ class ExpenseControllerIntegrationTest {
                 .amount(new BigDecimal("50.00"))
                 .date(LocalDate.of(2024, 1, 16))
                 .category("Travel")
-                .createdAt(LocalDateTime.now())
                 .build();
 
-        // When
         mockMvc.perform(post("/api/expenses/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request1)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/expenses/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request2)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
-        // Then
         assertThat(expenseRepository.count()).isEqualTo(2);
     }
 
     @Test
     void createExpense_shouldAssignIdToResponse() throws Exception {
-        // Given
         ExpenseRequest request = createDefaultExpenseRequest();
 
-        // When
         String response = mockMvc.perform(post("/api/expenses/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
         ExpenseResponse createdExpense = objectMapper.readValue(response, ExpenseResponse.class);
 
-        // Then
         assertThat(expenseRepository.count()).isEqualTo(1);
         assertThat(createdExpense.getId()).isNotNull();
     }
@@ -224,13 +201,12 @@ class ExpenseControllerIntegrationTest {
                 .amount(new BigDecimal("15.00"))
                 .date(LocalDate.of(2024, 1, 15))
                 .category("Food")
-                .createdAt(LocalDateTime.now())
                 .build();
 
         String response = mockMvc.perform(post("/api/expenses/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
@@ -252,7 +228,6 @@ class ExpenseControllerIntegrationTest {
                 .amount(AMOUNT)
                 .date(DATE)
                 .category(CATEGORY)
-                .createdAt(CREATED_AT)
                 .build();
     }
 }

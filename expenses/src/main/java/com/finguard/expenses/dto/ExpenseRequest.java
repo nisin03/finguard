@@ -2,9 +2,6 @@ package com.finguard.expenses.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-
-import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -32,8 +29,5 @@ public class ExpenseRequest {
 
     @NotBlank
     private String category;
-
-    @CreationTimestamp
-    private LocalDateTime createdAt;
 
 }

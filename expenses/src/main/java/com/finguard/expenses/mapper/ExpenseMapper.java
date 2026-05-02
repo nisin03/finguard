@@ -37,7 +37,6 @@ public class ExpenseMapper {
                 .amount(expenseDTO.getAmount())
                 .date(expenseDTO.getDate())
                 .category(expenseDTO.getCategory())
-                .createdAt(expenseDTO.getCreatedAt())
                 .build();
     }
 
@@ -50,7 +49,6 @@ public class ExpenseMapper {
         expense.setAmount(expenseDTO.getAmount());
         expense.setDate(expenseDTO.getDate());
         expense.setCategory(expenseDTO.getCategory());
-        expense.setCreatedAt(expenseDTO.getCreatedAt());
     }
 
     public List<ExpenseResponse> toDtoList(List<Expense> expenses) {

@@ -69,7 +69,6 @@ class ExpenseMapperTest {
     @Test
     void toEntity_shouldMapExpenseDTOToExpense() {
         // Given
-        LocalDateTime createdAt = LocalDateTime.of(2024, 1, 15, 10, 30);
         LocalDate date = LocalDate.of(2024, 1, 15);
         BigDecimal amount = new BigDecimal("100.50");
         String category = "Food";
@@ -80,7 +79,6 @@ class ExpenseMapperTest {
                 .amount(amount)
                 .date(date)
                 .category(category)
-                .createdAt(createdAt)
                 .build();
 
         // When
@@ -93,7 +91,6 @@ class ExpenseMapperTest {
         assertEquals(amount, result.getAmount());
         assertEquals(date, result.getDate());
         assertEquals(category, result.getCategory());
-        assertEquals(createdAt, result.getCreatedAt());
     }
 
     @Test
@@ -165,7 +162,6 @@ class ExpenseMapperTest {
                 .amount(BigDecimal.ONE)
                 .date(LocalDate.now())
                 .category("Category 1")
-                .createdAt(LocalDateTime.now())
                 .build();
 
         ExpenseRequest expenseDTO2 = ExpenseRequest.builder()
@@ -173,7 +169,6 @@ class ExpenseMapperTest {
                 .amount(BigDecimal.TEN)
                 .date(LocalDate.now().minusDays(1))
                 .category("Category 2")
-                .createdAt(LocalDateTime.now().minusHours(1))
                 .build();
 
         List<ExpenseRequest> expenseDTOs = Arrays.asList(expenseDTO1, expenseDTO2);
