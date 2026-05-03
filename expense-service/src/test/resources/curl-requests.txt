@@ -86,3 +86,10 @@ curl -X POST http://localhost:8080/api/auth/login \
     "username": "admin",
     "password": "password"
   }'
+
+curl -X POST  https://finguard-m70q.onrender.com/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "admin",
+    "password": "admin123"
+  }'
