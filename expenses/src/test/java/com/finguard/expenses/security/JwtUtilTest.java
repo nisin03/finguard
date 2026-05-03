@@ -74,7 +74,14 @@ class JwtUtilTest {
     }
 
     private String tamperToken(String token) {
-        char replacement = token.charAt(token.length() - 1) == 'a' ? 'b' : 'a';
-        return token.substring(0, token.length() - 1) + replacement;
+        String[] segments = token.split("\\.");
+        String signature = segments[2];
+        int tamperIndex = Math.max(0, signature.length() / 2);
+        char original = signature.charAt(tamperIndex);
+        char replacement = original == 'a' ? 'b' : 'a';
+        String tamperedSignature = signature.substring(0, tamperIndex)
+                + replacement
+                + signature.substring(tamperIndex + 1);
+        return segments[0] + "." + segments[1] + "." + tamperedSignature;
     }
 }

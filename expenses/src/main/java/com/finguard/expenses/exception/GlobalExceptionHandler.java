@@ -23,7 +23,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException ex) {
         Map<String, Object> err = new HashMap<>();
         Map<String, String> fieldErrors = new LinkedHashMap<>();
 
@@ -33,6 +34,14 @@ public class GlobalExceptionHandler {
 
         err.put("errors", fieldErrors);
         return new ResponseEntity<>(err, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AuthLoginException.class)
+    public ResponseEntity<Map<String, Object>> handleLoginException(AuthLoginException ex) {
+        Map<String, Object> err = new HashMap<>();
+        err.put("message", "Invalid credentials");
+        err.put("status", HttpStatus.UNAUTHORIZED.value());
+        return new ResponseEntity<>(err, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(Exception.class)

@@ -28,6 +28,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.finguard.expenses.dto.ExpenseRequest;
 import com.finguard.expenses.dto.ExpenseResponse;
 import com.finguard.expenses.repository.ExpenseRepository;
+import com.finguard.expenses.security.JwtUtil;
 import com.finguard.expenses.support.PostgresIntegrationTest;
 
 @SpringBootTest
@@ -51,6 +52,9 @@ class ExpenseControllerIntegrationTest extends PostgresIntegrationTest {
 
     @Autowired
     private WebApplicationContext webApplicationContext;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @BeforeEach
     void setUp() {
@@ -77,16 +81,19 @@ class ExpenseControllerIntegrationTest extends PostgresIntegrationTest {
                 .build();
 
         mockMvc.perform(post("/api/expenses/create")
+                .header("Authorization", authHeader())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request1)))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/expenses/create")
+                .header("Authorization", authHeader())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request2)))
                 .andExpect(status().isCreated());
 
-        mockMvc.perform(get("/api/expenses"))
+        mockMvc.perform(get("/api/expenses")
+                .header("Authorization", authHeader()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].description").value("Lunch"))
@@ -97,7 +104,8 @@ class ExpenseControllerIntegrationTest extends PostgresIntegrationTest {
 
     @Test
     void getAllExpenses_shouldReturnEmptyListWhenNoExpenses() throws Exception {
-        mockMvc.perform(get("/api/expenses"))
+        mockMvc.perform(get("/api/expenses")
+                .header("Authorization", authHeader()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
     }
@@ -107,6 +115,7 @@ class ExpenseControllerIntegrationTest extends PostgresIntegrationTest {
         ExpenseRequest request = createDefaultExpenseRequest();
 
         String response = mockMvc.perform(post("/api/expenses/create")
+                .header("Authorization", authHeader())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -117,7 +126,8 @@ class ExpenseControllerIntegrationTest extends PostgresIntegrationTest {
         ExpenseResponse createdExpense = objectMapper.readValue(response, ExpenseResponse.class);
         Long expenseId = createdExpense.getId();
 
-        mockMvc.perform(get("/api/expenses/{id}", expenseId))
+        mockMvc.perform(get("/api/expenses/{id}", expenseId)
+                .header("Authorization", authHeader()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.description").value(DESCRIPTION))
                 .andExpect(jsonPath("$.amount").value(AMOUNT.doubleValue()))
@@ -126,7 +136,8 @@ class ExpenseControllerIntegrationTest extends PostgresIntegrationTest {
 
     @Test
     void getExpenseById_shouldReturn404WhenExpenseNotFound() throws Exception {
-        mockMvc.perform(get("/api/expenses/{id}", 999L))
+        mockMvc.perform(get("/api/expenses/{id}", 999L)
+                .header("Authorization", authHeader()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").exists())
                 .andExpect(jsonPath("$.status").value(404));
@@ -137,6 +148,7 @@ class ExpenseControllerIntegrationTest extends PostgresIntegrationTest {
         ExpenseRequest request = createDefaultExpenseRequest();
 
         mockMvc.perform(post("/api/expenses/create")
+                .header("Authorization", authHeader())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -164,11 +176,13 @@ class ExpenseControllerIntegrationTest extends PostgresIntegrationTest {
                 .build();
 
         mockMvc.perform(post("/api/expenses/create")
+                .header("Authorization", authHeader())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request1)))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/expenses/create")
+                .header("Authorization", authHeader())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request2)))
                 .andExpect(status().isCreated());
@@ -181,6 +195,7 @@ class ExpenseControllerIntegrationTest extends PostgresIntegrationTest {
         ExpenseRequest request = createDefaultExpenseRequest();
 
         String response = mockMvc.perform(post("/api/expenses/create")
+                .header("Authorization", authHeader())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -204,6 +219,7 @@ class ExpenseControllerIntegrationTest extends PostgresIntegrationTest {
                 .build();
 
         String response = mockMvc.perform(post("/api/expenses/create")
+                .header("Authorization", authHeader())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -216,7 +232,8 @@ class ExpenseControllerIntegrationTest extends PostgresIntegrationTest {
 
         assertThat(expenseRepository.count()).isEqualTo(1);
 
-        mockMvc.perform(delete("/api/expenses/{id}", expenseId))
+        mockMvc.perform(delete("/api/expenses/{id}", expenseId)
+                .header("Authorization", authHeader()))
                 .andExpect(status().is2xxSuccessful());
 
         assertThat(expenseRepository.count()).isEqualTo(0);
@@ -229,5 +246,9 @@ class ExpenseControllerIntegrationTest extends PostgresIntegrationTest {
                 .date(DATE)
                 .category(CATEGORY)
                 .build();
+    }
+
+    private String authHeader() {
+        return "Bearer " + jwtUtil.generateToken("admin");
     }
 }
