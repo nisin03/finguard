@@ -3,6 +3,7 @@ services:
     name: expense-service
     runtime: docker
     dockerfilePath: ./expense-service/Dockerfile
+    dockerContext: ./expense-service
     envVars:
       - key: DB_URL
         sync: false
