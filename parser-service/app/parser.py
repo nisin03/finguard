@@ -15,18 +15,12 @@ def parse_email(email_text: str) -> ParsedExpense:
     prompt = f"""
     Extract expense data from this email text.
 
-    Return JSON only.
-    No markdown.
-    No explanation.
-    No code fences.
-
-    Fields:
-    - description: merchant or vendor name
-    - amount: numbers only, no currency symbols
-    - date: YYYY-MM-DD format
-    - category: one of Food, Transport, Shopping, Utilities, Entertainment, Other
-
-    If any field can't be determined, use "unknown".
+    Rules:
+    - description should be the merchant or vendor name
+    - amount should be the numeric transaction amount
+    - date should be the transaction date
+    - category should be the best matching allowed category
+    - use null when amount or date cannot be determined
 
     Email text: {email_text}
     """.strip()
@@ -34,14 +28,10 @@ def parse_email(email_text: str) -> ParsedExpense:
     response = client.models.generate_content(
         model="gemini-2.5-flash",
         contents=prompt,
+        config={
+            "response_mime_type": "application/json",
+            "response_json_schema": ParsedExpense.model_json_schema(),
+        },
     )
 
-    response_text = response.text if response.text is not None else "{}"
-    data = json.loads(response_text)
-
-    return ParsedExpense(
-        description=data.get("description", "unknown"),
-        amount=data.get("amount", "unknown"),
-        date=data.get("date", "unknown"),
-        category=data.get("category", "unknown"),
-    )
+    return ParsedExpense.model_validate_json(response.text or "{}")
