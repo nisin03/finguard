@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+from fastapi import HTTPException
 
 load_dotenv()
 
@@ -15,4 +16,7 @@ def health():
 
 @app.post("/parse")
 def parse_request(request: ParseRequest):
-    return parse_email(request.email_text)
+    try:
+        return parse_email(request.email_text)
+    except ValueError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc

@@ -6,6 +6,6 @@ class ParseRequest(BaseModel):
 
 class ParsedExpense(BaseModel):
     description: str
-    amount: str
+    amount: float
     date: str
     category: str
