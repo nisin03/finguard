@@ -5,78 +5,6 @@ LOCALHOST CURL REQUESTS
 BASE URL:
 http://localhost:8080
 
-
--------------------------
-GET ALL EXPENSES (non-deleted)
--------------------------
-curl http://localhost:8080/api/expenses
-
-
--------------------------
-GET EXPENSE BY ID
--------------------------
-curl http://localhost:8080/api/expenses/1
-
-
--------------------------
-CREATE EXPENSE (POST)
--------------------------
-curl -X POST http://localhost:8080/api/expenses/create \
-  -H "Content-Type: application/json" \
-  -d '{
-    "description": "Lunch at Jollibee",
-    "amount": 150.50,
-    "date": "2026-05-01",
-    "category": "Food"
-  }'
-
-
--------------------------
-UPDATE EXPENSE (PUT)
--------------------------
-curl -X PUT http://localhost:8080/api/expenses/1 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "description": "Grab ride to office",
-    "amount": 250.00,
-    "date": "2026-05-01",
-    "category": "Transport"
-  }'
-
-
--------------------------
-SOFT DELETE EXPENSE
--------------------------
-curl -X DELETE http://localhost:8080/api/expenses/1
-
-
--------------------------
-GET DELETED EXPENSES
-(only if you implement this endpoint)
--------------------------
-curl http://localhost:8080/api/expenses/deleted
-
-
--------------------------
-RESTORE SOFT-DELETED EXPENSE
--------------------------
-curl -X PATCH http://localhost:8080/api/expenses/1/restore
-
-
--------------------------
-GET ALL INCLUDING DELETED
-(admin/debug endpoint)
--------------------------
-curl http://localhost:8080/api/expenses/all
-
-
--------------------------
-GET WITH AUTH (JWT)
--------------------------
-curl -H "Authorization: Bearer YOUR_TOKEN" \
-  http://localhost:8080/api/expenses
-
-
 -------------------------
 LOGIN REQUEST (GET TOKEN)
 -------------------------
@@ -84,7 +12,52 @@ curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "admin",
-    "password": "password"
+    "password": "admin123"
   }'
 
-curl -X POST  https://finguard-m70q.onrender.com/api/auth/login -H "Content-Type: application/json" -d '{"username": "admin","password": "admin123"}'
+Set the returned token before using protected endpoints:
+TOKEN="<paste-token-here>"
+
+-------------------------
+GET ALL EXPENSES
+-------------------------
+curl http://localhost:8080/api/expenses \
+  -H "Authorization: Bearer $TOKEN"
+
+-------------------------
+GET EXPENSE BY ID
+-------------------------
+curl http://localhost:8080/api/expenses/1 \
+  -H "Authorization: Bearer $TOKEN"
+
+-------------------------
+CREATE EXPENSE
+-------------------------
+curl -X POST http://localhost:8080/api/expenses/create \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "description": "Lunch at Jollibee",
+    "amount": 150.50,
+    "date": "2026-05-01",
+    "category": "Food"
+  }'
+
+-------------------------
+UPDATE EXPENSE
+-------------------------
+curl -X PUT http://localhost:8080/api/expenses/1 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "description": "Grab ride to office",
+    "amount": 250.00,
+    "date": "2026-05-01",
+    "category": "Transport"
+  }'
+
+-------------------------
+SOFT DELETE EXPENSE
+-------------------------
+curl -X DELETE http://localhost:8080/api/expenses/1 \
+  -H "Authorization: Bearer $TOKEN"
