@@ -11,44 +11,68 @@ HEALTH CHECK
 curl http://localhost:8000/health
 
 -------------------------
-PARSE EMAIL
+PARSE EMAIL - FOOD DELIVERY
 -------------------------
-curl -X POST http://localhost:8000/parse \
+curl -X POST "http://localhost:8000/parse" \
   -H "Content-Type: application/json" \
-  -d '{
-    "email_text": "Thank you for your order at Grab Food! Your total of PHP 350.50 has been charged to your card ending in 1234. Order placed on May 9, 2026."
-  }'
+  -d '{"email_text":"Thank you for your GrabFood order from Jollibee - BGC Stopover. Total paid: PHP 428.50 via Visa ending in 1234. Order placed on May 9, 2026 at 7:42 PM."}'
+
+-------------------------
+PARSE EMAIL - COFFEE SHOP
+-------------------------
+curl -X POST "http://localhost:8000/parse" \
+  -H "Content-Type: application/json" \
+  -d '{"email_text":"Starbucks Philippines receipt: You paid PHP 185.00 for your purchase at Starbucks One Bonifacio on 2026-05-10 08:14."}'
+
+-------------------------
+PARSE EMAIL - RIDE HAILING
+-------------------------
+curl -X POST "http://localhost:8000/parse" \
+  -H "Content-Type: application/json" \
+  -d '{"email_text":"Grab trip receipt. Pickup: Ayala Triangle Gardens. Drop-off: Uptown Mall. Fare charged: PHP 276.75. Completed on May 11, 2026."}'
+
+-------------------------
+PARSE EMAIL - UTILITIES
+-------------------------
+curl -X POST "http://localhost:8000/parse" \
+  -H "Content-Type: application/json" \
+  -d '{"email_text":"Meralco payment confirmation. Account ending in 8841. Amount paid: PHP 2,146.30 on May 12, 2026. Thank you for paying your electric bill."}'
+
+-------------------------
+PARSE EMAIL - ONLINE SHOPPING
+-------------------------
+curl -X POST "http://localhost:8000/parse" \
+  -H "Content-Type: application/json" \
+  -d '{"email_text":"Shopee order confirmation: Order 260513ABC has been paid. Seller: Anker Official Store. Total charged: PHP 1,299.00. Payment date: 2026-05-13."}'
+
+-------------------------
+PARSE EMAIL - ENTERTAINMENT
+-------------------------
+curl -X POST "http://localhost:8000/parse" \
+  -H "Content-Type: application/json" \
+  -d '{"email_text":"Netflix receipt: Your monthly subscription payment of PHP 549.00 was processed on May 14, 2026."}'
+
+-------------------------
+PARSE EMAIL - MISSING DATE
+-------------------------
+curl -X POST "http://localhost:8000/parse" \
+  -H "Content-Type: application/json" \
+  -d '{"email_text":"Thank you for shopping at Watsons. Total amount charged to your card: PHP 642.25."}'
+
+-------------------------
+PARSE EMAIL - AMBIGUOUS AMOUNT
+-------------------------
+curl -X POST "http://localhost:8000/parse" \
+  -H "Content-Type: application/json" \
+  -d '{"email_text":"Lazada update: Your order from Nike Official Store has shipped. Estimated total for your cart was PHP 3,499.00. Final charged amount will appear on your statement."}'
+
+-------------------------
+PARSE EMAIL - NON-EXPENSE
+-------------------------
+curl -X POST "http://localhost:8000/parse" \
+  -H "Content-Type: application/json" \
+  -d '{"email_text":"Welcome to the FinGuard newsletter. Here are this weeks product updates, security tips, and upcoming features."}'
 
 curl -X POST "http://localhost:8000/parse" \
   -H "Content-Type: application/json" \
-  -d '{"email_text":"Paid 150.00 for coffee at Starbucks on 2026-05-09."}'
-
-Transport receipt
-
-curl -X POST "http://localhost:8000/parse" \
-  -H "Content-Type: application/json" \
-  -d '{"email_text":"Your Grab ride on May 10, 2026 cost PHP 248.75."}'
-
-Utilities bill
-
-curl -X POST "http://localhost:8000/parse" \
-  -H "Content-Type: application/json" \
-  -d '{"email_text":"Meralco payment confirmation: PHP 1840.20 paid on 2026-05-11."}'
-
-Missing date
-
-curl -X POST "http://localhost:8000/parse" \
-  -H "Content-Type: application/json" \
-  -d '{"email_text":"Thank you for shopping at Shopee. Total charged: PHP799.00."}'
-
-No real expense data
-
-curl -X POST "http://localhost:8000/parse" \
-  -H "Content-Type: application/json" \
-  -d '{"email_text":"Welcome to our newsletter. Here are this weeks updates and promotions."}'
-
-A richer receipt
-
-curl -X POST "http://localhost:8000/parse" \
-  -H "Content-Type: application/json" \
-  -d '{"email_text":"Thank you for your order at Grab Food! Your total of PHP350.50 has been charged to your card ending in 1234. Order placed on May 9, 2026."}'
+  -d '{"email_text":"We have successfully processed your payment of PHP 8414.79 to BPI. Biller: BPI Bill Amount: PHP 8414.79 Reference No: 132696 Please save this email as reference for your payment and to verify with your biller if payment has been received. Please allow up to 3 banking days for crediting to your biller. We look forward to serving you again. Thank you, MariBank Philippines"}'
